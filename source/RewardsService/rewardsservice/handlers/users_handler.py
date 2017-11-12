@@ -23,8 +23,28 @@ class UsersHandler(tornado.web.RequestHandler):
             db = client["Rewards"]
             db.users.remove()
             db.users.insert({
+                "email": "jimbob@thebobsociety.com",
+                "points": 102,
+                "tier": "A",
+                "tier_name": "5% off purchase",
+                "next_tier": "B",
+                "next_tier_name": "10% off purchase",
+                "next_tier_progress": ".5",
+
+                })
+            db.users.insert({
+                "email": "bobby@thebobsociety.com",
+                "points": 102,
+                "tier": "A",
+                "tier_name": "5% off purchase",
+                "next_tier": "B",
+                "next_tier_name": "10% off purchase",
+                "next_tier_progress": ".5",
+
+                })
+            db.users.insert({
                 "email": "bob@thebobsociety.com",
-                "points": 101,
+                "points": 103,
                 "tier": "A",
                 "tier_name": "5% off purchase",
                 "next_tier": "B",

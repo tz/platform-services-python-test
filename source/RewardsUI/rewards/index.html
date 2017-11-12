@@ -35,12 +35,13 @@
         <h2>User Rewards</h2>
         <form>
             <label>Email address: </label><input id="email-search-box-js" type="text" value="bob@thebobsociety.com"/><input id="email-search-button-js" type="button" value="Search"/>
+            <input id="email-search-button-all-js" type="button" value="Show All Records"/>
             <br />
             <img id="email-search-error-js" src="https://image.freepik.com/free-icon/signal-warning_318-28476.jpg" width="20px" style="display: none"/>
             <img id="email-search-spin-js" src="https://www.wallies.com/filebin/images/loading_apple.gif" width="20px" style="display: none"/>
             <label id="email-search-status-js" style="font-weight: bold; margin-left: 5px;"></label>
         </form>
-        <table border="1" id="customer-results-js" style="display:none">
+        <table border="1" id="customer-results-js">
             <thead>
             <tr>
                 <th>Email Address</th>
@@ -52,16 +53,18 @@
                 <th>Next Reward Tier Progress</th>
             </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td id="customer-email-js">Email Address</td>
-                    <td id="customer-points-js">Reward Points</td>
-                    <td id="customer-tier-js">Reward Tier</td>
-                    <td id="customer-tier-name-js">Reward Tier Name</td>
-                    <td id="customer-next-tier-js">Next Reward Tier</td>
-                    <td id="customer-next-tier-name-js">Next Reward Tier Name</td>
-                    <td id="customer-next-tier-progress-js">Next Reward Tier Progressz</td>
-                </tr>
+            <tbody id="customer-list-js">
+                {% for user in users_data %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.points }}</td>
+                        <td>{{ user.tier }}</td>
+                        <td>{{ user.tier_name }}</td>
+                        <td>{{ user.next_tier }}</td>
+                        <td>{{ user.next_tier_name }}</td>
+                        <td>{{ user.next_tier_progress }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -70,19 +73,22 @@
 var STATUS_SEARCHING    = 1;
 var STATUS_FAILED       = 2;
 var STATUS_SUCCESS      = 3;
+var global_status       = STATUS_SUCCESS;   // globals are usually bad. Quick and dirty state management.
 
-function show_search_status(status) {
+function set_page_status(status) {
     if (status == STATUS_SEARCHING) {
         $('#email-search-error-js').hide();
-        $('#customer-results-js').hide();
         $('#email-search-spin-js').show();
         $('#email-search-status-js').text('Searching....');
         $('#email-search-status-js').show();
+        $('#customer-list-js tr').remove();
+        $('#customer-results-js').hide();
     } else if (status == STATUS_FAILED) {
         $('#email-search-error-js').show();
         $('#email-search-spin-js').hide();
         $('#email-search-status-js').text('No Records Found.');
         $('#email-search-status-js').show();
+        $('#email-search-button-all-js').show();
     } else if (status == STATUS_SUCCESS) {
         $('#email-search-error-js').hide();
         $('#email-search-spin-js').hide();
@@ -91,51 +97,66 @@ function show_search_status(status) {
     }
 }
 
+function page_busy() {
+    return global_status == STATUS_SEARCHING;
+}
 
-var search = function(){
-    show_search_status(STATUS_SEARCHING);
-    $('#email-search-button-js').prop('disabled', true);
+var search = function(email){
+    set_page_status(STATUS_SEARCHING);
     search_api = function(){
-        email = $('input#email-search-box-js').val()
+        if (email != '') {
+            email = '/' + email
+        }
         return $.ajax({
-            'url':'http://localhost:7050/users/' + email,
+            'url':'http://localhost:7050/users' + email,
             'method':'GET',
         });
     };
     success = function(data) {
-        console.log(data);
-        // console.log();
+        // console.log(data);
         data = $.parseJSON(data);
-        show_search_status(STATUS_SUCCESS);
-        $('#customer-email-js').text(data[0]['email']);
-        $('#customer-points-js').text(data[0]['points']);
-        $('#customer-tier-js').text(data[0]['tier']);
-        $('#customer-tier-name-js').text(data[0]['tier_name']);
-        $('#customer-next-tier-js').text(data[0]['next_tier']);
-        $('#customer-next-tier-name-js').text(data[0]['next_tier_name']);
-        $('#customer-next-tier-progress-js').text(data[0]['next_tier_progress']);
+        if (data.length < 1) {
+            set_page_status(STATUS_FAILED);
+            return;
+        }
+        set_page_status(STATUS_SUCCESS);
+        if (data.lenth == 1) {
+            $('#email-search-button-all-js').show();
+        }
+        console.log("datalen" + data.length);
+        for (i = 0; i < data.length; i++) {
+            elem = $('#customer-list-js').append('<tr></tr>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['email'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['points'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['tier'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['tier_name'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['next_tier'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['next_tier_name'] + '</td>');
+            $('#customer-list-js tr').last().append('<td>' + data[i]['next_tier_progress'] + '</td>');
+        }
     }
     failure = function() {
-        show_search_status(STATUS_FAILED);
+        set_page_status(STATUS_FAILED);
     }
     res = search_api().then(success, failure).then(function(){
         $('#email-search-button-js').prop('disabled', false);
     });
 }
 
-// Listen for both a click and an enter, and manage whether a request is ongoing by disabling/enabling the button
+// INPUT LISTENERS
 $('#email-search-button-js').click(function() {
-    if (!$('#email-search-button-js').prop('disabled')) {
-        search();
-    }
+    email = $('input#email-search-box-js').val()
+    if (!page_busy()) { search(email); }
 });
 $('#email-search-box-js').keypress(function(e) {
     if (e.keyCode == 13) {
         e.preventDefault();
-        if (!$('#email-search-button-js').prop('disabled')) {
-            search();
-        }
+        email = $('input#email-search-box-js').val()
+        if (!page_busy()) { search(email); }
     }
+});
+$('#email-search-button-all-js').click(function() {
+        if (!page_busy()) { search(''); }
 });
 </script>
 </html>
