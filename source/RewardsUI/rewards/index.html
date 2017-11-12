@@ -1,5 +1,7 @@
 <html>
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- <script src="index.js"></script> -->
 </head>
 <body>
     <h1>Welcome to the Rewards Dashboard</h1>
@@ -32,7 +34,7 @@
     <div>
         <h2>User Rewards</h2>
         <form>
-            <label>Email address: </label><input type="text"/><input type="button" value="Search"/>
+            <label>Email address: </label><input id="email-search-box-js" type="text"/><input id="email-search-button-js" type="button" value="Search"/>
         </form>
         <table border="1">
             <thead>
@@ -60,4 +62,24 @@
         </table>
     </div>
 </body>
+<script type="text/javascript">
+$('#email-search-button-js').click(function() {
+    console.log('searching....');
+    $('#email-search-button-js').prop('disabled', true);
+    search = function(){
+        email = $('input#email-search-box-js').val()
+        return $.ajax({
+            'url':'http://localhost:7050/users/' + email,
+            'method':'GET',
+        });
+    };
+    success = function(data) {
+        console.log(data);
+    }
+    failure = function() {
+        console.log("error");
+    }
+    res = search().then(success, failure).then(function(){ $('#email-search-button-js').prop('disabled', false); console.log('finally')});
+});
+</script>
 </html>
