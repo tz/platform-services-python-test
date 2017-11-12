@@ -48,14 +48,3 @@ class UsersHandler(tornado.web.RequestHandler):
             self.write(json.dumps(self.request))
         else:
             self.write(json.dumps({"error":"404"}))
-
-
-
-
-
-
-
-
-
-
-#

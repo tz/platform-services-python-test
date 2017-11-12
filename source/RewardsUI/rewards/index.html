@@ -34,9 +34,13 @@
     <div>
         <h2>User Rewards</h2>
         <form>
-            <label>Email address: </label><input id="email-search-box-js" type="text"/><input id="email-search-button-js" type="button" value="Search"/>
+            <label>Email address: </label><input id="email-search-box-js" type="text" value="bob@thebobsociety.com"/><input id="email-search-button-js" type="button" value="Search"/>
+            <br />
+            <img id="email-search-error-js" src="https://image.freepik.com/free-icon/signal-warning_318-28476.jpg" width="20px" style="display: none"/>
+            <img id="email-search-spin-js" src="https://www.wallies.com/filebin/images/loading_apple.gif" width="20px" style="display: none"/>
+            <label id="email-search-status-js" style="font-weight: bold; margin-left: 5px;"></label>
         </form>
-        <table border="1">
+        <table border="1" id="customer-results-js" style="display:none">
             <thead>
             <tr>
                 <th>Email Address</th>
@@ -50,23 +54,48 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>customer01@gmail.com</td>
-                    <td>100</td>
-                    <td>A</td>
-                    <td>5% off purchase</td>
-                    <td>B</td>
-                    <td>10% off purchase</td>
-                    <td>50%</td>
+                    <td id="customer-email-js">Email Address</td>
+                    <td id="customer-points-js">Reward Points</td>
+                    <td id="customer-tier-js">Reward Tier</td>
+                    <td id="customer-tier-name-js">Reward Tier Name</td>
+                    <td id="customer-next-tier-js">Next Reward Tier</td>
+                    <td id="customer-next-tier-name-js">Next Reward Tier Name</td>
+                    <td id="customer-next-tier-progress-js">Next Reward Tier Progressz</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </body>
 <script type="text/javascript">
-$('#email-search-button-js').click(function() {
-    console.log('searching....');
+var STATUS_SEARCHING    = 1;
+var STATUS_FAILED       = 2;
+var STATUS_SUCCESS      = 3;
+
+function show_search_status(status) {
+    if (status == STATUS_SEARCHING) {
+        $('#email-search-error-js').hide();
+        $('#customer-results-js').hide();
+        $('#email-search-spin-js').show();
+        $('#email-search-status-js').text('Searching....');
+        $('#email-search-status-js').show();
+    } else if (status == STATUS_FAILED) {
+        $('#email-search-error-js').show();
+        $('#email-search-spin-js').hide();
+        $('#email-search-status-js').text('No Records Found.');
+        $('#email-search-status-js').show();
+    } else if (status == STATUS_SUCCESS) {
+        $('#email-search-error-js').hide();
+        $('#email-search-spin-js').hide();
+        $('#email-search-status-js').hide();
+        $('#customer-results-js').show();
+    }
+}
+
+
+var search = function(){
+    show_search_status(STATUS_SEARCHING);
     $('#email-search-button-js').prop('disabled', true);
-    search = function(){
+    search_api = function(){
         email = $('input#email-search-box-js').val()
         return $.ajax({
             'url':'http://localhost:7050/users/' + email,
@@ -75,11 +104,38 @@ $('#email-search-button-js').click(function() {
     };
     success = function(data) {
         console.log(data);
+        // console.log();
+        data = $.parseJSON(data);
+        show_search_status(STATUS_SUCCESS);
+        $('#customer-email-js').text(data[0]['email']);
+        $('#customer-points-js').text(data[0]['points']);
+        $('#customer-tier-js').text(data[0]['tier']);
+        $('#customer-tier-name-js').text(data[0]['tier_name']);
+        $('#customer-next-tier-js').text(data[0]['next_tier']);
+        $('#customer-next-tier-name-js').text(data[0]['next_tier_name']);
+        $('#customer-next-tier-progress-js').text(data[0]['next_tier_progress']);
     }
     failure = function() {
-        console.log("error");
+        show_search_status(STATUS_FAILED);
     }
-    res = search().then(success, failure).then(function(){ $('#email-search-button-js').prop('disabled', false); console.log('finally')});
+    res = search_api().then(success, failure).then(function(){
+        $('#email-search-button-js').prop('disabled', false);
+    });
+}
+
+// Listen for both a click and an enter, and manage whether a request is ongoing by disabling/enabling the button
+$('#email-search-button-js').click(function() {
+    if (!$('#email-search-button-js').prop('disabled')) {
+        search();
+    }
+});
+$('#email-search-box-js').keypress(function(e) {
+    if (e.keyCode == 13) {
+        e.preventDefault();
+        if (!$('#email-search-button-js').prop('disabled')) {
+            search();
+        }
+    }
 });
 </script>
 </html>
