@@ -1,9 +1,8 @@
 # Features
 New RESTful endpoints:
-    /users             GET       returns a list of all users and their informations
-    /users/email       GET       get the information of a single user
-    /users/email       PUT       Update a user, taking a "total" argument (an order total), converting it to points, and adding it
-                                 to the user's total points. Note that this operation is not idempotent.
+* **GET /users** returns a list of all users and their informations
+* **GET /users/email** get the information of a single user
+* **PUT /users/email** Update a user, taking a "total" argument (an order total), converting it to points, and adding it to the user's total points. Note that this operation is not idempotent.
 
 This solution fulfills the basic goals of the project. I added two new rewards tiers to simplify the process of going out of bounds on tiers, and my design generally tries to make no assumptions about future restructuring of the tiers. If the tiers are ever modified, all that would be necessary to do to update each user would be to call a PUT request on each one with 0 as the total.
 
