@@ -81,8 +81,6 @@ class UsersHandler(tornado.web.RequestHandler):
         }
         db.users.update_one(query, {'$set': new_data})
 
-        # self.write(json.dumps(new_data))
-        # self.write(json.dumps({"put":"ok","oldpts":points,"newpts":new_points}))
         self.write(json.dumps({"put":"ok", "ha": highest_achieved, "nt":next_tier}))
 
 

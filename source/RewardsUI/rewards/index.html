@@ -150,7 +150,6 @@ var search = function(email){
         });
     };
     success = function(data) {
-        // console.log(data);
         data = $.parseJSON(data);
         if (data.length < 1) {
             set_page_status(STATUS_SEARCH_FAILED);
@@ -190,7 +189,6 @@ var update = function(email, total){
         });
     };
     success = function(data) {
-        console.log(data)
         set_page_status(STATUS_UPDATE_SUCCESS);
     }
     failure = function() {
@@ -219,11 +217,9 @@ $('#email-search-button-all-js').click(function() {
 
 // INPUT LISTENERS -- update
 function submit_update() {
-    console.log(global_status);
     if (page_busy()) { return };
     email = $('#customer-update-email-js').val();
     total = $('#customer-update-total-js').val();
-    console.log('up')
     update(email, total);
 }
 $('#customer-update-btn-js').click(function() {
