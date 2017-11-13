@@ -26,8 +26,12 @@
     <div>
         <h2>Add orders</h2>
         <form>
-            <label>Enter email address: </label><input type="text"/><br>
-            <label>Enter order total: </label><input type="text"/><input type="button" value="Submit Order"/>
+            <label>Enter email address: </label><input id="customer-update-email-js" type="text" value="bob@thebobsociety.com"/><br>
+            <label>Enter order total: </label><input id="customer-update-total-js" type="text" value="10"/><input id="customer-update-btn-js" type="button" value="Submit Order"/>
+            <br />
+            <img id="update-error-js" src="https://image.freepik.com/free-icon/signal-warning_318-28476.jpg" width="20px" style="display: none"/>
+            <img id="update-spin-js" src="https://www.wallies.com/filebin/images/loading_apple.gif" width="20px" style="display: none"/>
+            <label id="update-status-js" style="font-weight: bold; margin-left: 5px;"></label>
         </form>
         <hr>
     </div>
@@ -70,10 +74,14 @@
     </div>
 </body>
 <script type="text/javascript">
-var STATUS_SEARCHING    = 1;
-var STATUS_FAILED       = 2;
-var STATUS_SUCCESS      = 3;
-var global_status       = STATUS_SUCCESS;   // globals are usually bad. Quick and dirty state management.
+// globals are usually bad. Quick and dirty state management.
+var STATUS_SEARCH_SUCCESS   = 1;
+var STATUS_UPDATE_SUCCESS   = 2;
+var STATUS_SEARCHING        = 3;
+var STATUS_SEARCH_FAILED    = 4;
+var STATUS_UPDATING         = 5;
+var STATUS_UPDATE_FAILED    = 6;
+var global_status           = STATUS_SEARCH_SUCCESS;
 
 function set_page_status(status) {
     if (status == STATUS_SEARCHING) {
@@ -83,13 +91,13 @@ function set_page_status(status) {
         $('#email-search-status-js').show();
         $('#customer-list-js tr').remove();
         $('#customer-results-js').hide();
-    } else if (status == STATUS_FAILED) {
+    } else if (status == STATUS_SEARCH_FAILED) {
         $('#email-search-error-js').show();
         $('#email-search-spin-js').hide();
         $('#email-search-status-js').text('No Records Found.');
         $('#email-search-status-js').show();
         $('#email-search-button-all-js').show();
-    } else if (status == STATUS_SUCCESS) {
+    } else if (status == STATUS_SEARCH_SUCCESS) {
         $('#email-search-error-js').hide();
         $('#email-search-spin-js').hide();
         $('#email-search-status-js').hide();
@@ -98,7 +106,7 @@ function set_page_status(status) {
 }
 
 function page_busy() {
-    return global_status == STATUS_SEARCHING;
+    return global_status == STATUS_SEARCHING || global_status == STATUS_UPDATING;
 }
 
 var search = function(email){
@@ -116,14 +124,13 @@ var search = function(email){
         // console.log(data);
         data = $.parseJSON(data);
         if (data.length < 1) {
-            set_page_status(STATUS_FAILED);
+            set_page_status(STATUS_SEARCH_FAILED);
             return;
         }
-        set_page_status(STATUS_SUCCESS);
+        set_page_status(STATUS_SEARCH_SUCCESS);
         if (data.lenth == 1) {
             $('#email-search-button-all-js').show();
         }
-        console.log("datalen" + data.length);
         for (i = 0; i < data.length; i++) {
             elem = $('#customer-list-js').append('<tr></tr>');
             $('#customer-list-js tr').last().append('<td>' + data[i]['email'] + '</td>');
@@ -136,27 +143,67 @@ var search = function(email){
         }
     }
     failure = function() {
-        set_page_status(STATUS_FAILED);
+        set_page_status(STATUS_SEARCH_FAILED);
     }
     res = search_api().then(success, failure).then(function(){
-        $('#email-search-button-js').prop('disabled', false);
     });
 }
 
-// INPUT LISTENERS
+var update = function(email, total){
+    set_page_status(STATUS_UPDATING);
+    update_api = function(){
+        return $.ajax({
+            'url':'http://localhost:7050/users/' + email,
+            'method':'PUT',
+            'data':{
+                'total':total,
+            }
+        });
+    };
+    success = function(data) {
+        console.log(data)
+        set_page_status(STATUS_UPDATE_SUCCESS);
+    }
+    failure = function() {
+        set_page_status(STATUS_UPDATE_FAILED);
+    }
+    res = update_api().then(success, failure).then(function(){
+    });
+}
+
+// INPUT LISTENERS -- search
 $('#email-search-button-js').click(function() {
-    email = $('input#email-search-box-js').val()
-    if (!page_busy()) { search(email); }
+    if (page_busy()) { return };
+    email = $('input#email-search-box-js').val();
+    search(email);
 });
 $('#email-search-box-js').keypress(function(e) {
-    if (e.keyCode == 13) {
-        e.preventDefault();
-        email = $('input#email-search-box-js').val()
-        if (!page_busy()) { search(email); }
-    }
+    if (page_busy()) { return };
+    if (e.keyCode !== 13) { return; }
+    e.preventDefault();
+    email = $('input#email-search-box-js').val();
+    search(email);
 });
 $('#email-search-button-all-js').click(function() {
-        if (!page_busy()) { search(''); }
+    if (!page_busy()) { search(''); }
+});
+
+// INPUT LISTENERS -- update
+function submit_update() {
+    console.log(global_status);
+    if (page_busy()) { return };
+    email = $('#customer-update-email-js').val();
+    total = $('#customer-update-total-js').val();
+    console.log('up')
+    update(email, total);
+}
+$('#customer-update-btn-js').click(function() {
+    submit_update();
+});
+$('#customer-update-total-js').keypress(function(e) {
+    if (e.keyCode !== 13) { return; }
+    e.preventDefault();
+    submit_update();
 });
 </script>
 </html>

@@ -2,7 +2,7 @@ from handlers.rewards_handler import RewardsHandler
 from handlers.users_handler import UsersHandler
 
 # Email regex adapted from http://www.regular-expressions.info/email.html
-# Not perfect but 99% good. Could be revisited.
+# Not perfect but 99% good. Could be revisited. Better to err on the side of restrictiveness
 
 url_patterns = [
     (r'/rewards', RewardsHandler),

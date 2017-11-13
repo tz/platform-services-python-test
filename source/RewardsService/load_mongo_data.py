@@ -8,6 +8,7 @@ def main():
 
     print("Removing and reloading rewards in mongo")
     db.rewards.remove()
+    db.rewards.insert({"points": 0, "rewardName": "None", "tier": "None", "placeholder": "True"})
     db.rewards.insert({"points": 100, "rewardName": "5% off purchase", "tier": "A"})
     db.rewards.insert({"points": 200, "rewardName": "10% off purchase", "tier": "B"})
     db.rewards.insert({"points": 300, "rewardName": "15% off purchase", "tier": "C"})
@@ -18,6 +19,8 @@ def main():
     db.rewards.insert({"points": 800, "rewardName": "40% off purchase", "tier": "H"})
     db.rewards.insert({"points": 900, "rewardName": "45% off purchase", "tier": "I"})
     db.rewards.insert({"points": 1000, "rewardName": "50% off purchase", "tier": "J"})
+    #One Quadrillion is probably enough points, but who knows--there are some real coupon clippers out there
+    db.rewards.insert({"points": 999999999999999, "rewardName": "None", "tier": "None", "placeholder": "True"})
     print("Rewards loaded in mongo")
 
 if __name__ == "__main__":
