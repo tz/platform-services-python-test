@@ -1,51 +1,80 @@
-<html>
+<!DOCTYPE html>
 <head>
+    <title>Reward Dahsboard</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!-- <script src="index.js"></script> -->
+    <style>
+        body {
+            font-family: arial;
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+        h1 {
+            color: #44a;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            text-align: right;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 2px 5px 2px 5px;
+        }
+        th {
+            background-color: #ccc;
+        }
+        input {
+            margin: 2px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Rewards Dashboard</h1>
+    <h1>Rewards Dashboard</h1>
     <div>
         <h2>Reward Tiers</h2>
-        <table border="1">
+        <table>
             <tr>
-                <th>Rewards Tier<th>
+                <th>Rewards Tier</th>
                 <th>Reward Points</th>
                 <th>Rewards Tier Name</th>
             </tr>
             {% for reward in rewards_data %}
                 <tr>
-                    <td>{{ reward.tier }}<td>
+                    <td>{{ reward.tier }}</td>
                     <td>{{ reward.points }}</td>
                     <td>{{ reward.rewardName }}</td>
                 </tr>
             {% endfor %}
         </table>
-        <hr>
     </div>
     <div>
         <h2>Add orders</h2>
         <form>
-            <label>Enter email address: </label><input id="customer-update-email-js" type="text" value="bob@thebobsociety.com"/><br>
-            <label>Enter order total: </label><input id="customer-update-total-js" type="text" value="10"/><input id="customer-update-btn-js" type="button" value="Submit Order"/>
+            <label>Email address: </label><input id="customer-update-email-js" type="text" placeholder="customer@example.com"/><br>
+            <label>Order total: </label><input id="customer-update-total-js" type="text" placeholder="14.99"/>
+            <br />
+            <input id="customer-update-btn-js" type="button" value="Submit Order"/>
             <br />
             <img id="update-error-js" src="https://image.freepik.com/free-icon/signal-warning_318-28476.jpg" width="20px" style="display: none"/>
             <img id="update-spin-js" src="https://www.wallies.com/filebin/images/loading_apple.gif" width="20px" style="display: none"/>
             <label id="update-status-js" style="font-weight: bold; margin-left: 5px;"></label>
         </form>
-        <hr>
     </div>
     <div>
         <h2>User Rewards</h2>
         <form>
-            <label>Email address: </label><input id="email-search-box-js" type="text" value="bob@thebobsociety.com"/><input id="email-search-button-js" type="button" value="Search"/>
+            <label>Email address: </label><input id="email-search-box-js" type="text" placeholder="customer@example.com"/>
+            <br />
+            <input id="email-search-button-js" type="button" value="Search"/>
             <input id="email-search-button-all-js" type="button" value="Show All Records"/>
             <br />
             <img id="email-search-error-js" src="https://image.freepik.com/free-icon/signal-warning_318-28476.jpg" width="20px" style="display: none"/>
             <img id="email-search-spin-js" src="https://www.wallies.com/filebin/images/loading_apple.gif" width="20px" style="display: none"/>
             <label id="email-search-status-js" style="font-weight: bold; margin-left: 5px;"></label>
         </form>
-        <table border="1" id="customer-results-js">
+        <table id="customer-results-js">
             <thead>
             <tr>
                 <th>Email Address</th>
